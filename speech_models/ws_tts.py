@@ -55,8 +55,6 @@ async def emit_websocket(websocket, message_data):
 
 async def run_tts(sentence, data, websocket):
 
-    # J: could update tts based on language here
-
     await tts_to_file(sentence, language)
 
     with open(f"speech.wav", 'rb') as f:
@@ -80,6 +78,16 @@ async def websocket_handler(uri):
 
         async for message in websocket:
             data = json.loads(message)
+            print("received message ", data)
+
+            # J: update tts based on language 
+            if 'language' in data: 
+                lang = data["language"]
+                if(lang != language):
+                    language = lang
+                    set_language(language)
+                    print(f"switched language to {language}")
+
             if 'text' in data:
                 from nltk import tokenize
                 sentences = tokenize.sent_tokenize(data["text"])

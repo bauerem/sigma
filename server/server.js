@@ -136,7 +136,14 @@ const process_query = (msg, chatId, userId) => {
         sendToUser(userId, chatId, {from: "admin", text, name: "AI"});
 
         if(clients['TTS']){
-            clients['TTS'].send(JSON.stringify({"chatId": chatId, "userId": userId, "text": text}));
+            clients['TTS'].send(JSON.stringify(
+                {
+                    "chatId": chatId, 
+                    "userId": userId, 
+                    "text": text,
+                    "language": msg.language
+                }
+            ));
         }
     });
 }
@@ -174,8 +181,6 @@ app.post('/hook', function(req, res){
     res.statusCode = 200;
     res.end();
 });
-
-const forbidden_words = ["Tibet", "genocide", "Tiananmen"];
 
 wss.on('connection', function connection(ws) {
     console.log('A client connected');
@@ -237,7 +242,7 @@ wss.on('connection', function connection(ws) {
                     const parsedData = JSON.parse(data);
                     console.log('received from AI (SR): %s', parsedData);
                     const text = parsedData["text"].replace("_POTENTIALLY_UNSAFE__","");
-                    console.log(text);
+                    console.log("text: ", text, "language: ", lang);
                     sendToUser(userId, chatId, {name: "AI (TTS)", ...parsedData});
                     process_query(parsedData, chatId, userId);
                 });
@@ -268,33 +273,25 @@ wss.on('connection', function connection(ws) {
                 // Perform your logic here
                 console.log(`Message from ${userId} in chat ${chatId}: ${text}`);
                 const msg = data;
-                let visitorName = msg.visitorName ? "[" + msg.visitorName + "]: " : "";
             
                 // Example of sending a message back to the user who sent the incoming message
                 sendToUser(userId, chatId, msg);
-                        
-                if(forbidden_words.some(el => msg.text.toLowerCase().includes(el.toLowerCase()))) {
-                    // Broadcast a message if it contains forbidden words
-                    sendToUser(userId, chatId, {name: "Admin", text: `Your message contains inappropriate content. 您的消息包含不当内容.`, from: 'admin'});
-                } else {
-                    // Correct spelling using write-good
-                    var writeGood = require('write-good');
-                    var suggestions = writeGood(msg.text, { passive: false, whitelist: ['read-only'] });
-                    console.log(suggestions);
-                    if(suggestions.length > 0) {
-                        const suggestions_str = suggestions.map((el) => el.reason).join(", ");
-                        // 我有以下建议...
-                        sendToUser(userId, chatId, {name: "Admin", text: `I have the following suggestions... ${suggestions_str}`, from: 'admin'});
-                    }
-            
-                    // Send message to TTS if available
-                    if(clients['TTS'] && clients['TTS'].readyState === WebSocket.OPEN) {
-                        clients['TTS'].send(JSON.stringify({"chatId": chatId, "userId": userId, "text": msg.text}));
-                    }
-            
-                    // Example call to process_query, assuming it's defined elsewhere
-                    process_query(msg, chatId, userId);
+        
+                // Send message to TTS if available
+                if(clients['TTS'] && clients['TTS'].readyState === WebSocket.OPEN) {
+                    clients['TTS'].send(JSON.stringify(
+                        {
+                            "chatId": chatId, 
+                            "userId": userId, 
+                            "text": msg.text,
+                            "language": msg.language
+                        })
+                    );
                 }
+        
+                // Example call to process_query, assuming it's defined elsewhere
+                process_query(msg, chatId, userId);
+
                 break;   
         }
     });
