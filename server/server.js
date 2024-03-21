@@ -241,8 +241,6 @@ wss.on('connection', function connection(ws) {
                     console.log(data);
                     const parsedData = JSON.parse(data);
                     console.log('received from AI (SR): %s', parsedData);
-                    const text = parsedData["text"].replace("_POTENTIALLY_UNSAFE__","");
-                    console.log("text: ", text, "language: ", lang);
                     sendToUser(userId, chatId, {name: "AI (TTS)", ...parsedData});
                     process_query(parsedData, chatId, userId);
                 });
