@@ -26,7 +26,11 @@ def preprocess(html_content):
     a_tags = soup.find_all('a', href=True)
     for a in a_tags:
         if a['href'].startswith('tel:'):
+<<<<<<< Updated upstream
             text += ' ' + a.text.strip()
+=======
+            text += 'telefon nummer ' + a.text.strip()
+>>>>>>> Stashed changes
 
     # Normalize the text by replacing multiple newline characters with a single newline
     text = re.sub(r'\n+', '\n', text)
