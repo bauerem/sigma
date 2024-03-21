@@ -13,6 +13,10 @@ last_utterances = {
     "en-gb": "Have a nice day",
     "de-ch": "Schönen Tag"
 }
+clarify={
+    "en-gb": "Could you please repeat yourself?",
+    "de-ch": "Koennen Sie Das bitte Wiederhoelen?"
+}
 end_prompt = "A caller was asked if they are okay fine with disconnecting the call. They replied thir(they speak <language>):<utterance>. Did they agree to disconnect? only say 'yes' or 'no'"
 rag_prompt = """A citizen is having a phone conversation with a state official. The conversation so far has gone as follows:
 <conversation>
@@ -26,7 +30,6 @@ retrieve_prompt="""A citizen is having a phone conversation with a state officia
 <conversation>
 Summarize the conversation so far, focussing on what the citizen wants to know in their last utterance. Your response will be used to retrieve documents relevant to the question.
 Be precise. Please only answer in <language>
-If there is no query from the speaker, say <EOC>
 """
 
 
@@ -71,10 +74,9 @@ class chatBot:
         query=call_gpt4_api(
             [],retrieve_prompt.replace("<conversation>", history).replace("<language>", "Swiss Standard German")
         )[0]["message"]["content"]
-        if "<EOC>" in query and len(self.history)>6:
-            self.state="OUTRO"
-            self.outro()
-            return
+        # if "<Clarify>" in query and self.next_utterance!=clarify[self.lang]:
+        #     self.next_utterance=clarify[self.lang]
+        #     return
         print('\033[93m Query to Retriever:'+query+'\033[0m')
         retrieved_corpus = perform_basic_search(self.last_utterance)
         
@@ -83,7 +85,7 @@ class chatBot:
             [],rag_prompt.replace("<conversation>", history).replace("<snippets>", ret).replace("<language>", self.lang)
         )
         reply = res[0]["message"]["content"]
-        if "<EOC>" in reply:
+        if "<EOC>" in reply and len(self.history)>6:
             self.state="OUTRO"
             reply=reply.replace("<EOC>","")
         self.next_utterance = reply
