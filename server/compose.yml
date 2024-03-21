@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  your_container:
+    restart: "always"
+    image: jonathanlehner/sigma
+    environment:
+      - VIRTUAL_HOST=sigma.jonathanlehner.com
+      - LETSENCRYPT_HOST=sigma.jonathanlehner.com
+      - LETSENCRYPT_EMAIL=jonathanslehner@gmail.com
+      - VIRTUAL_PORT=3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+        - "/var/run/docker.sock:/tmp/docker.sock:ro"
+        - "/etc/nginx/certs:/etc/nginx/certs:ro"
+        - "/etc/nginx/vhost.d"
+        - "/usr/share/nginx/html"
+
+  letsencrypt-nginx-proxy-companion:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    environment:
+      - DEBUG=true
+    volumes:
+      - "/etc/nginx/certs:/etc/nginx/certs"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    volumes_from:
+      - "nginx-proxy"
+    depends_on:
+      - "nginx-proxy"

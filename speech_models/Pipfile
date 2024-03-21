@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+websockets = "==12.0"
+phonemizer = "==3.2.1"
+numpy = "==1.22.0"
+python-socketio = {version = "==5.10.0", extras = ["client"]}
+openai-whisper = "==20231117"
+pydub = "==0.25.1"
+soundfile = "==0.12.1"
+transformers = "==4.33.0"
+contourpy = "==1.0.5"
+openai = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

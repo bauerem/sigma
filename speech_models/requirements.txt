@@ -1,0 +1,13 @@
+websockets==12.0
+phonemizer==3.2.1
+numpy==1.22.0 # this version required by TTS
+python-socketio[client]==5.10.0
+openai-whisper==20231117
+#TTS @ git+https://github.com/coqui-ai/TTS
+pydub==0.25.1
+soundfile==0.12.1
+transformers==4.33.0 # this version required by TTS
+pip==23.3.1
+contourpy==1.0.5 # this version required by TTS
+openai
+git+https://github.com/BerriAI/litellm
