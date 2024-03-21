@@ -15,6 +15,7 @@ from config import SERVER_ADDRESS, OPENAI_API_KEY
 
 # Get device
 device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
 
 # Determine the Whisper model to load
 # J: use whisper to detect - language = os.environ.get('APP_LANGUAGE', "en")
