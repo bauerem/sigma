@@ -14,6 +14,8 @@ from config import SERVER_ADDRESS, OPENAI_API_KEY
 
 from system_messages import SYSTEM_MSG_DICT
 
+from chat import chatBot
+
 # Assume OPENAI_API_KEY is set in environment variables
 class GPTHandler:
     def __init__(self, system_message, server_address=SERVER_ADDRESS):
@@ -21,26 +23,25 @@ class GPTHandler:
         self.system_message = system_message
         self.messages = {}
 
+        self.chatbot = chatBot()
+
     async def run_gpt(self, message, chatId):
         try:
-            '''if chatId not in self.messages:
-                self.messages[chatId] = [{"role": "system", "content": self.system_message}]
-            self.messages[chatId].append({"role": "user", "content": message})
-            response = await acompletion(model="gpt-3.5-turbo-1106", messages=self.messages[chatId])  # Adjust model as needed
+            #if chatId not in self.messages:
+            #    self.messages[chatId] = [{"role": "system", "content": self.system_message}]
+            #self.messages[chatId].append({"role": "user", "content": message})
+
+            '''response = await acompletion(model="gpt-3.5-turbo-1106", messages=self.messages[chatId])  # Adjust model as needed
             print("response", response)
             text = response.choices[0].message['content'].strip()'''
 
-            from chat import chatBot
-            chatbot = chatBot()
-            last=""
-            while(True):
-                out=chatbot.run_conversation(last)
-                print("Official: ",out)
-                if chatbot.state=="TERMINATE":
-                    break
-                last=input()
+            # J: needs adjustment for multiple chatIds
+            text = self.chatbot.run_conversation(message)
+            print("Official: ", text)
+            if self.chatbot.state=="TERMINATE":
+                self.chatbot = chatBot()
 
-            self.messages[chatId].append({"role": "assistant", "content": text})
+            #self.messages[chatId].append({"role": "assistant", "content": text})
             return text
         except Exception as e:
             print(f"Error running GPT: {str(e)}")
