@@ -22,12 +22,18 @@ def preprocess(html_content):
     paragraphs = soup.find_all('p')
     text = ' '.join(paragraph.text for paragraph in paragraphs)
 
+    # Find and include phone numbers from <a> tags
+    a_tags = soup.find_all('a', href=True)
+    for a in a_tags:
+        if a['href'].startswith('tel:'):
+            text += ' ' + a.text.strip()
+
     # Normalize the text by replacing multiple newline characters with a single newline
     text = re.sub(r'\n+', '\n', text)
     
     # Normalize the text by replacing multiple spaces with a single space
     text = re.sub(r' +', ' ', text)
-    
+
     text = ftfy.fix_text(text)
     
     # Extract the title, prioritizing the text content of the div with classname "page-header"
