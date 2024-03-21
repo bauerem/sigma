@@ -19,7 +19,7 @@ print(f"Using device: {device}")
 
 # Determine the Whisper model to load
 # J: use whisper to detect - language = os.environ.get('APP_LANGUAGE', "en")
-model_name = "tiny" if True else "large-v3"
+model_name = "tiny" if False else "large-v3"
 model = whisper.load_model(model_name).to(device)
 
 
