@@ -81,7 +81,12 @@ async def websocket_handler(uri):
         async for message in websocket:
             data = json.loads(message)
             if 'text' in data:
-                await run_tts(data["text"], data, websocket)
+                from nltk import tokenize
+                sentences = tokenize.sent_tokenize(data["text"])
+
+                for sentence in sentences:
+                    # J: not parallel
+                    await run_tts(sentence, data, websocket)
 
 async def main():
     uri = SERVER_ADDRESS
