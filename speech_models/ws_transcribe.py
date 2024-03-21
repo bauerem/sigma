@@ -38,6 +38,8 @@ async def transcribe_audio(audio_data):
     _, probs = model.detect_language(mel)
     lang = max(probs, key=probs.get)
     print(f"Detected language: {lang}")
+    if lang not in ["en", "de"]:
+        lang = "en"
 
     options = whisper.DecodingOptions(fp16=device == "cuda", language=lang)
     result = whisper.decode(model, mel, options)
