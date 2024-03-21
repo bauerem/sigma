@@ -3,7 +3,7 @@ from llm_utils import perform_basic_search, call_gpt4_api
 
 start_utterances = {
     "en-gb": "Hello, This is the Canton of Saint Gallen Telephone Exchange. How may I help you?",
-    "de-ch": "Hallo, hier ist Telefonzentrale des Kantons St. Gallen. Wie kann ich Ihnen helfen?",
+    "de-ch": "Hallo, hier ist Telefonzentrale des Kantons Sankt Gallen. Wie kann ich Ihnen helfen?",
 }
 end_utterances = {
     "en-gb": "If that is all, I shall now disconnect the call.",
