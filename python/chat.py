@@ -5,6 +5,15 @@ start_utterances = {
     "en-gb": "Hello, This is the Canton of Saint Gallen Telephone Exchange. How may I help you?",
     "de-ch": "Hallo, hier ist Telefonzentrale des Kantons St. Gallen. Wie kann ich Ihnen helfen?",
 }
+end_utterances = {
+    "en-gb": "If that is all, I shall now disconnect the call.",
+    "de-ch": "Wenn das alles ist, werde ich jetzt das Telefongespräch beenden."
+}
+last_utterances = {
+    "en-gb": "Have a nice day",
+    "de-ch": "Schönen Tag"
+}
+end_prompt = "A caller was asked if they are okay fine with disconnecting the call. They replied thir(they speak <language>):<utterance>. Did they agree to disconnect? only say 'yes' or 'no'"
 rag_prompt = """A citizen is having a phone conversation with a state official. The conversation so far has gone as follows:
 <conversation>
 You need to provide the next utterance of the Official. The official knows the following pieces of information:
@@ -33,7 +42,7 @@ class chatBot:
         self.last_utterance = last_utterance
         if self.state != "INIT":
             self.history.append(("Citizen", self.last_utterance))
-        state_map = {"INIT": self.init, "RAG": self.rag, "RULE": self.rule}
+        state_map = {"INIT": self.init, "RAG": self.rag, "RULE": self.rule, "OUTRO":self.outro, "CONFIRM":self.confirm}
         state_map[self.state]()
         self.history.append(("Official", self.next_utterance))
         return self.next_utterance
@@ -45,15 +54,26 @@ class chatBot:
     def rule(self):
         # Not Implemented
         self.rag()
-
+    def outro(self):
+        self.next_utterance=end_utterances[self.lang]
+        self.state="CONFIRM"
+    def confirm(self):
+        reply=call_gpt4_api(
+            [],end_prompt.replace("<utterance>",self.last_utterance).replace("<language>", "Swiss Standard German")
+        )[0]["message"]["content"]
+        if "yes" in reply.lower():
+            self.state="TERMINATE"
+            self.next_utterance=last_utterances[self.lang]
+        else:
+            self.rag()
     def rag(self):
         history = "\n".join(b + ": " + t for b, t in self.history)
         query=call_gpt4_api(
             [],retrieve_prompt.replace("<conversation>", history).replace("<language>", "Swiss Standard German")
         )[0]["message"]["content"]
         if "<EOC>" in query:
-            self.state="TERMINATE"
-            self.next_utterance=""
+            self.state="OUTRO"
+            self.outro()
             return
         print('\033[93m Query to Retriever:'+query+'\033[0m')
         retrieved_corpus = perform_basic_search(self.last_utterance)
@@ -64,6 +84,6 @@ class chatBot:
         )
         reply = res[0]["message"]["content"]
         if "<EOC>" in reply:
-            self.state="TERMINATE"
+            self.state="OUTRO"
             reply=reply.replace("<EOC>","")
         self.next_utterance = reply
