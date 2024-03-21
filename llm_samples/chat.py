@@ -71,7 +71,7 @@ class chatBot:
         query=call_gpt4_api(
             [],retrieve_prompt.replace("<conversation>", history).replace("<language>", "Swiss Standard German")
         )[0]["message"]["content"]
-        if "<EOC>" in query:
+        if "<EOC>" in query and len(self.history)>6:
             self.state="OUTRO"
             self.outro()
             return
