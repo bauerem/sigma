@@ -64,8 +64,7 @@ data: List[Document] = load_jsonl_to_documents("preprocessed_data.jsonl")
 print("Splitting text into chunks...")
 chunks: List[Document] = text_splitter.split_documents(data)
 
-# Delete all documents in the index
-client.schema.delete_all()
+# TODO: Delete all documents in the index
 print("Uploading chunks...")
 retriever.add_documents(chunks)
 print("Upload completed.")
