@@ -28,20 +28,21 @@ tts_api = TTS()
 language = os.environ.get('APP_LANGUAGE', "en")
 
 tts = None
+tts_dict = {}
+tts_dict["en"] = TTS("tts_models/en/ljspeech/glow-tts").to(device)
+tts_dict["de"] = TTS("tts_models/de/thorsten/tacotron2-DDC").to(device)
+tts_dict["zh"] = TTS("tts_models/zh-CN/baker/tacotron2-DDC-GST").to(device)
 
 def set_language(language):
     global tts
 
     # Choose a TTS model based on language
     if language == "en":
-        model_name = "tts_models/en/ljspeech/glow-tts"
+        tts = tts_dict["en"]
     elif language == "de":
-        model_name = "tts_models/de/thorsten/tacotron2-DDC"
+        tts = tts_dict["de"]
     elif language == "zh-cn" or language == "zh":
-        model_name = "tts_models/zh-CN/baker/tacotron2-DDC-GST"
-
-    # Initialize TTS with the chosen model
-    tts = TTS(model_name).to(device)
+        tts = tts_dict["zh"]
 
 set_language(language)
 
