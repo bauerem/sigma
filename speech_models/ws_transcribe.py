@@ -21,37 +21,43 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model_name = "tiny" if True else "large-v3"
 model = whisper.load_model(model_name).to(device)
 
+
 async def transcribe_audio(audio_data):
     # Save the received audio data to a file
-    with open('./transcript.wav', 'wb') as f:
+    with open("./transcript.wav", "wb") as f:
         f.write(audio_data)
 
     # Load, process, and transcribe the audio
     audio = whisper.load_audio("./transcript.wav")
     audio = whisper.pad_or_trim(audio)
-    mel = whisper.log_mel_spectrogram(audio, n_mels=128 if model_name == "large-v3" else 80).to(device)
+    mel = whisper.log_mel_spectrogram(
+        audio, n_mels=128 if model_name == "large-v3" else 80
+    ).to(device)
 
     # detect the spoken language
     _, probs = model.detect_language(mel)
     lang = max(probs, key=probs.get)
     print(f"Detected language: {lang}")
+    if lang not in ["en", "de"]:
+        lang = "de"
 
     options = whisper.DecodingOptions(fp16=device == "cuda", language=lang)
     result = whisper.decode(model, mel, options)
     return (result.text, lang)
 
+
 async def handle_websocket(uri):
     max_size_limit = 50 * 2**20  # 50 MB in bytes
     async with websockets.connect(uri, max_size=max_size_limit) as websocket:
         # Register for speech recognition
-        await websocket.send(json.dumps({ 'type': 'registerSR' }))
+        await websocket.send(json.dumps({"type": "registerSR"}))
         print("Registered SR via Websockets")
 
         # Listen for messages
         async for message in websocket:
             data = json.loads(message)
-            #print('I received a message for SR!', data)
-            print('I received a message for SR! - data too big')
+            # print('I received a message for SR!', data)
+            print("I received a message for SR! - data too big")
 
             try:
                 audio_data = base64.b64decode(data["audio"])
@@ -59,18 +65,24 @@ async def handle_websocket(uri):
                 print(text)
 
                 # Send back the transcribed text
-                await websocket.send(json.dumps({
-                    'chatId': data["chatId"], 
-                    'userId': data["userId"], 
-                    'text': text,
-                    'language': lang
-                }))
+                await websocket.send(
+                    json.dumps(
+                        {
+                            "chatId": data["chatId"],
+                            "userId": data["userId"],
+                            "text": text,
+                            "language": lang,
+                        }
+                    )
+                )
             except Exception as e:
                 print(e)
+
 
 async def main():
     uri = SERVER_ADDRESS  # Ensure this is a ws:// or wss:// URL
     await handle_websocket(uri)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())
