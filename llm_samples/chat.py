@@ -34,7 +34,7 @@ class chatBot:
     def __init__(self):
         self.history = []
         self.state = "INIT"
-        self.lang = "en-gb"
+        self.lang = "de-ch"
         self.next_utterance = ""
         self.last_utterance = ""
 
