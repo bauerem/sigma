@@ -72,6 +72,7 @@ async def run_tts(sentence, data, websocket):
     await asyncio.sleep(1)
 
 async def websocket_handler(uri):
+    global language
     async with websockets.connect(uri) as websocket:
         await websocket.send(json.dumps({ 'type': 'registerTTS' }))
         print("Registered TTS via Websockets")
