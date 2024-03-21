@@ -34,7 +34,7 @@ def perform_basic_search(retriever, query):
     )
     for result in results:
         print(
-            f"- {result.page_content[:100]}..."
+            f"#########################\n- {result.page_content}...\n"
         )  # Prints the beginning of the page_content
 
 
