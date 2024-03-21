@@ -2,16 +2,11 @@ from load_key import *
 from litellm import completion
 from time import sleep
 import os
-import dotenv
+import openai
 import weaviate
 from langchain.retrievers.weaviate_hybrid_search import WeaviateHybridSearchRetriever
 
-# Load environment variables
-dotenv.load_dotenv()
-WEAVIATE_URL = os.getenv("WEAVIATE_URL_STARTHACK")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-
+openai.api_key=OPENAI_API_KEY
 def setup_retriever():
     client = weaviate.Client(
         url=WEAVIATE_URL,
@@ -31,20 +26,18 @@ def setup_retriever():
 
 def perform_basic_search(query):
     retriever = setup_retriever()
-    print(f"\nPerforming basic search for: '{query}'")
+    # print(f"\nPerforming basic search for: '{query}'")
     results = retriever.get_relevant_documents(
         "AI integration in society",
         score=True,
     )
-    for result in results:
-        print(
-            f"#########################\n- {result.page_content}...\n"
-        )  # Prints the beginning of the page_content
+    return [r.page_content for r in results]
 
 
 def call_gpt4_api(history, prompt, retries: int = 3):
     try:
         response = completion(
+            api_key=OPENAI_API_KEY,
             model="gpt-4-turbo-preview",
             messages=[{"role": "system", "content": prompt}] + history,
         )
