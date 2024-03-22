@@ -1,5 +1,7 @@
 # Σ - The Full Voice ChatBot Solution
 
+We built this The Full Voice ChatBot Solution for the municipality of St. Gallen in Switzerland as part of the Start Hack challenge.
+
 ## Build and deploy
 
     cd server
