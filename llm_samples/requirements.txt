@@ -1,0 +1,4 @@
+websockets
+litellm
+weaviate-cli
+langchain
