@@ -1,4 +1,4 @@
-# voice-chat-bot
+# Σ - The Full Voice ChatBot Solution
 
 ## Build and deploy
 
