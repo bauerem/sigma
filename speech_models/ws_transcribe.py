@@ -1,8 +1,6 @@
 import asyncio
 import websockets
 import json
-import whisper
-import torch
 import os
 import sys
 import base64
@@ -13,39 +11,43 @@ sys.path.append(parent_dir)
 
 from config import SERVER_ADDRESS, OPENAI_API_KEY
 
-# Get device
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"Using device: {device}")
+# Import the requests library for making HTTP requests
+import requests
 
-# Determine the Whisper model to load
-# J: use whisper to detect - language = os.environ.get('APP_LANGUAGE', "en")
-model_name = "medium"  # "tiny" if False else "large-v3"
-model = whisper.load_model(model_name).to(device)
+# Function to transcribe audio using OpenAI's Whisper API
+async def transcribe_audio(audio_data: bytes) -> tuple[str, str]:
+    # Encode the audio data to base64
+    audio_base64 = base64.b64encode(audio_data).decode('utf-8')
 
+    # Prepare the request payload
+    payload = {
+        "audio": {
+            "data_b64": audio_base64
+        },
+        "model": "whisper-1",  # Specify the Whisper model to use
+        "language": None  # Let the API automatically detect the language
+    }
 
-async def transcribe_audio(audio_data):
-    # Save the received audio data to a file
-    with open("./transcript.wav", "wb") as f:
-        f.write(audio_data)
+    # Prepare the headers for the request
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
 
-    # Load, process, and transcribe the audio
-    audio = whisper.load_audio("./transcript.wav")
-    audio = whisper.pad_or_trim(audio)
-    mel = whisper.log_mel_spectrogram(
-        audio, n_mels=128 if model_name == "large-v3" else 80
-    ).to(device)
+    # Make the request to the Whisper API
+    response = requests.post(
+        "https://api.openai.com/v1/audio/transcriptions",
+        headers=headers,
+        json=payload
+    )
 
-    # detect the spoken language
-    _, probs = model.detect_language(mel)
-    lang = max(probs, key=probs.get)
-    print(f"Detected language: {lang}")
+    # Parse the response
+    response_data = response.json()
+    transcription = response_data['text']  # Extract the transcription text
+    language = response_data.get('language', 'unknown')  # Extract the detected language, default to 'unknown' if not provided
 
-    # TODO: Don't hardcode the language
-    lang = "de"
-
-    options = whisper.DecodingOptions(fp16=device == "cuda", language=lang)
-    result = whisper.decode(model, mel, options)
-    return (result.text, lang)
+    # Return the transcription and the detected language
+    return (transcription, language)
 
 
 async def handle_websocket(uri):
